@@ -18,6 +18,9 @@
 
 #include "gAta.h"
 
+//Default macro used to catch CUDA GPU failures
+//Anytime we run any CUDA API calls like cudaMemcpy, etc.
+//Run it inside CUDA_CHECK(cudaMemcpy), to print out error
 #define CUDA_CHECK(stmt) do {                                          \
     cudaError_t err = (stmt);                                          \
     if (err != cudaSuccess) {                                          \
@@ -27,14 +30,19 @@
     }                                                                  \
 } while (0)
 
+//====================== MAIN FUNCTION ===============================//
 int gata_gpu_algorithm(int r, int b,
                        char *sendbuf, int sendcount, MPI_Datatype sendtype,
                        char *recvbuf, int recvcount, MPI_Datatype recvtype,
                        MPI_Comm comm) {
-
+    //Bounds checking for radix
+    //Less than 2, set to 2 for standard Bruck's algo
     if (r < 2) r = 2;
 
+    //Standard variables declaration
     int rank, nprocs, typesize;
+
+    //MPI API calls to initialize variables
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &nprocs);
     MPI_Type_size(sendtype, &typesize);
